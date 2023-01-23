@@ -2,7 +2,7 @@ use ndarray;
 use opencv;
 use opencv::core::{BorderTypes, Point, Scalar, CV_8U};
 use opencv::gapi::morphology_ex;
-use opencv::imgproc::MorphTypes;
+use opencv::imgproc::{find_contours, MorphTypes};
 use opencv::prelude::*;
 
 const SENST: i8 = 20;
@@ -53,6 +53,17 @@ fn detect_blue(frame: Mat, background: Mat) {
             0,
             BorderTypes::BORDER_REFLECT,
             Scalar::default(),
+        )
+        .unwrap();
+
+        let mut contours = Mat::default();
+
+        find_contours(
+            &Mat::from_raw(closing.as_raw_mut()),
+            &mut contours,
+            mode,
+            method,
+            offset,
         );
     }
 }
