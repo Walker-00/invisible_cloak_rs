@@ -1,6 +1,6 @@
 use ndarray;
 use opencv;
-use opencv::core::{BorderTypes, Point, Scalar, Vector, CV_8U};
+use opencv::core::{BorderTypes, Point, Scalar, ToInputArray, Vector, CV_8U};
 use opencv::gapi::morphology_ex;
 use opencv::imgproc::{
     contour_area, fill_poly, find_contours, MorphTypes, CHAIN_APPROX_SIMPLE, RETR_EXTERNAL,
@@ -72,7 +72,20 @@ fn detect_blue(frame: Mat, background: Mat) {
         let mut idk = Mat::new_nd_vec(&Vector::from_slice(&[500, 500, 3]), CV_8U).unwrap();
 
         let cont_sorted = contour_area(&mut contours, true).unwrap();
-        let contour_mask = fill_poly(&mut idk, pts, color, line_type, shift, offset);
+        let contour_mask = fill_poly(
+            &mut idk,
+            InputArray::from(value),
+            color,
+            line_type,
+            shift,
+            offset,
+        );
+    }
+}
+
+impl ToInputArray for f64 {
+    fn input_array(&self) -> opencv::Result<opencv::core::_InputArray> {
+        self.input_array()
     }
 }
 
