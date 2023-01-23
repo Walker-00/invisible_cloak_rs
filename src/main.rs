@@ -1,8 +1,8 @@
 use ndarray;
 use opencv;
-use opencv::core::CV_8U;
+use opencv::core::{BorderTypes, Point, Scalar, CV_8U};
 use opencv::gapi::morphology_ex;
-use opencv::imgproc::MORPH_CLOSE;
+use opencv::imgproc::MorphTypes;
 use opencv::prelude::*;
 
 const SENST: i8 = 20;
@@ -33,7 +33,8 @@ fn detect_blue(frame: Mat, background: Mat) {
             &mut (opencv::gapi::GMat::from_raw(hsv_image.as_raw_mut())),
             &light_blue,
             &dark_blue,
-        );
+        )
+        .unwrap();
 
         let kernel = Mat::new_size(
             opencv::core::Size_ {
@@ -41,9 +42,18 @@ fn detect_blue(frame: Mat, background: Mat) {
                 height: KERNEL_SIZE,
             },
             CV_8U,
-        );
+        )
+        .unwrap();
 
-        let closing = morphology_ex(&mask, MORPH_CLOSE, kernel);
+        let closing = morphology_ex(
+            &mask,
+            MorphTypes::MORPH_CLOSE,
+            &kernel,
+            Point::default(),
+            0,
+            BorderTypes::BORDER_REFLECT,
+            Scalar::default(),
+        );
     }
 }
 
