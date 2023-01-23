@@ -51,9 +51,9 @@ fn detect_blue(frame: Mat, background: Mat) {
             &mask,
             MorphTypes::MORPH_CLOSE,
             &kernel,
-            Point::default(),
-            0,
-            BorderTypes::BORDER_REFLECT,
+            Point::new(-1, -1),
+            1,
+            BorderTypes::BORDER_CONSTANT,
             Scalar::default(),
         )
         .unwrap();
@@ -69,23 +69,18 @@ fn detect_blue(frame: Mat, background: Mat) {
         )
         .unwrap();
 
+        let contours_vec = contours
+            .iter()
+            .map(|c: opencv::core::MatIter<'_, f64>| c.collect::<Vec<_>>())
+            .unwrap();
+
+        let cont_sorted = contours_vec.sort_by(|c1, c2| {
+            let area1 = contour_area(&c1, false).unwrap();
+            let area2 = contour_area(&c2, false).unwrap();
+            area2.partial_cmp(&area1).unwrap()
+        });
+
         let mut idk = Mat::new_nd_vec(&Vector::from_slice(&[500, 500, 3]), CV_8U).unwrap();
-
-        let cont_sorted = contour_area(&mut contours, true).unwrap();
-        let contour_mask = fill_poly(
-            &mut idk,
-            InputArray::from(value),
-            color,
-            line_type,
-            shift,
-            offset,
-        );
-    }
-}
-
-impl ToInputArray for f64 {
-    fn input_array(&self) -> opencv::Result<opencv::core::_InputArray> {
-        self.input_array()
     }
 }
 
