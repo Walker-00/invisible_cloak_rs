@@ -1,10 +1,13 @@
 use ndarray;
 use opencv;
+use opencv::core::CV_8U;
+use opencv::gapi::morphology_ex;
+use opencv::imgproc::MORPH_CLOSE;
 use opencv::prelude::*;
 
 const SENST: i8 = 20;
 const H_VALUE: i8 = 20;
-const KERNEL_SIZE: i8 = 10;
+const KERNEL_SIZE: i32 = 10;
 
 fn detect_blue(frame: Mat, background: Mat) {
     let mut hsv_image = Mat::default();
@@ -31,6 +34,16 @@ fn detect_blue(frame: Mat, background: Mat) {
             &light_blue,
             &dark_blue,
         );
+
+        let kernel = Mat::new_size(
+            opencv::core::Size_ {
+                width: KERNEL_SIZE,
+                height: KERNEL_SIZE,
+            },
+            CV_8U,
+        );
+
+        let closing = morphology_ex(&mask, MORPH_CLOSE, kernel);
     }
 }
 
