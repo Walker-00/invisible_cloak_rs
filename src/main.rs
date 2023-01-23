@@ -69,16 +69,7 @@ fn detect_blue(frame: Mat, background: Mat) {
         )
         .unwrap();
 
-        let contours_vec = contours
-            .iter()
-            .map(|c: opencv::core::MatIter<'_, i32>| c.collect::<Vec<_>>())
-            .unwrap();
-
-        let cont_sorted = contours_vec.sort_by(|c1, c2| {
-            let a1 = contour_area(&c1, false).unwrap();
-            let a2 = contour_area(&c2, false).unwrap();
-            a2.partial_cmp(&a1).unwrap()
-        });
+        let mut c = contours.iter().iter().
 
         let mut idk = Mat::new_nd_vec(&Vector::from_slice(&[500, 500, 3]), CV_8U).unwrap();
     }
