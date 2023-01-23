@@ -1,8 +1,10 @@
 use ndarray;
 use opencv;
-use opencv::core::{BorderTypes, Point, Scalar, CV_8U};
+use opencv::core::{BorderTypes, Point, Scalar, Vector, CV_8U};
 use opencv::gapi::morphology_ex;
-use opencv::imgproc::{find_contours, MorphTypes};
+use opencv::imgproc::{
+    contour_area, fill_poly, find_contours, MorphTypes, CHAIN_APPROX_SIMPLE, RETR_EXTERNAL,
+};
 use opencv::prelude::*;
 
 const SENST: i8 = 20;
@@ -45,7 +47,7 @@ fn detect_blue(frame: Mat, background: Mat) {
         )
         .unwrap();
 
-        let closing = morphology_ex(
+        let mut closing = morphology_ex(
             &mask,
             MorphTypes::MORPH_CLOSE,
             &kernel,
@@ -61,10 +63,16 @@ fn detect_blue(frame: Mat, background: Mat) {
         find_contours(
             &Mat::from_raw(closing.as_raw_mut()),
             &mut contours,
-            mode,
-            method,
-            offset,
-        );
+            RETR_EXTERNAL,
+            CHAIN_APPROX_SIMPLE,
+            Point::default(),
+        )
+        .unwrap();
+
+        let mut idk = Mat::new_nd_vec(&Vector::from_slice(&[500, 500, 3]), CV_8U).unwrap();
+
+        let cont_sorted = contour_area(&mut contours, true).unwrap();
+        let contour_mask = fill_poly(&mut idk, pts, color, line_type, shift, offset);
     }
 }
 
