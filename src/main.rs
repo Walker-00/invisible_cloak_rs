@@ -100,7 +100,13 @@ unsafe fn detect_blue(frame: &mut Mat, background: &mut Mat) -> GMat {
 }
 
 fn main() {
-    let mut cap = VideoCapture::new(0, CAP_ANY).unwrap();
+    let mut cap = VideoCapture::new(0, CAP_ANY).expect("Fuck: ");
+
+    let opened = cap.is_opened().unwrap();
+
+    if !opened {
+        panic!("Error Capt video");
+    }
 
     let mut background = Mat::default();
 
@@ -116,7 +122,10 @@ fn main() {
         )
         .unwrap();
 
-        imshow("Background", &Mat::from_raw(res_background.as_raw_mut())).unwrap();
+        let mat_background = Mat::from_raw(res_background.as_raw_mut());
+        if mat_background.size().unwrap().width > 0 && mat_background.size().unwrap().height > 0 {
+            imshow("Background", &Mat::from_raw(res_background.as_raw_mut())).unwrap();
+        }
         wait_key(0).unwrap();
         destroy_all_windows().unwrap();
 
@@ -144,9 +153,14 @@ fn main() {
 
             out.write(&Mat::from_raw(image.as_raw_mut())).unwrap();
 
-            imshow("Image", &Mat::from_raw(image.as_raw_mut())).unwrap();
+            let mat_image = Mat::from_raw(image.as_raw_mut());
 
-            if wait_key(1).unwrap() == b'q' as i32 {
+            if mat_image.size().unwrap().width > 0 && mat_image.size().unwrap().height > 0 {
+                imshow("Image", &Mat::from_raw(image.as_raw_mut())).unwrap();
+            }
+
+            let key = wait_key(10).unwrap();
+            if key > 0 && key != 255 {
                 break;
             }
         }
