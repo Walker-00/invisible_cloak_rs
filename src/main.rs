@@ -38,19 +38,12 @@ fn detect_blue(frame: Mat, background: Mat) {
         )
         .unwrap();
 
-        let kernel = Mat::new_size(
-            opencv::core::Size_ {
-                width: KERNEL_SIZE,
-                height: KERNEL_SIZE,
-            },
-            CV_8U,
-        )
-        .unwrap();
+        let kernel = Mat::ones(KERNEL_SIZE, KERNEL_SIZE, CV_8U).unwrap();
 
         let mut closing = morphology_ex(
             &mask,
             MorphTypes::MORPH_CLOSE,
-            &kernel,
+            &kernel.a(),
             Point::new(-1, -1),
             1,
             BorderTypes::BORDER_CONSTANT,
@@ -69,7 +62,7 @@ fn detect_blue(frame: Mat, background: Mat) {
         )
         .unwrap();
 
-        let mut c = contours.iter().iter().
+        let mut c: Vec<_> = contours.iter::<f32>().into_iter().collect();
 
         let mut idk = Mat::new_nd_vec(&Vector::from_slice(&[500, 500, 3]), CV_8U).unwrap();
     }
