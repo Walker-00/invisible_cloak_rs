@@ -1,16 +1,17 @@
 use ndarray;
 use opencv;
 use opencv::core::{
-    in_range, BorderTypes, Point, Scalar, Scalar_, ToInputArray, Vec3d, VecN, Vector,
+    in_range, BorderTypes, Point, Scalar, Scalar_, Size, ToInputArray, Vec3d, VecN, Vector,
     BORDER_CONSTANT, CV_8U,
 };
 use opencv::gapi::{bitwise_and, bitwise_or, resize, GMat};
+use opencv::highgui::{destroy_all_windows, imshow, wait_key};
 use opencv::imgproc::{
     contour_area, fill_poly, find_contours, morphology_default_border_value, morphology_ex,
-    MorphTypes, CHAIN_APPROX_SIMPLE, LINE_8, MORPH_CLOSE, RETR_EXTERNAL,
+    MorphTypes, CHAIN_APPROX_SIMPLE, INTER_LINEAR, LINE_8, MORPH_CLOSE, RETR_EXTERNAL,
 };
 use opencv::prelude::*;
-use opencv::videoio::{VideoCapture, CAP_ANY};
+use opencv::videoio::{VideoCapture, VideoWriter, CAP_ANY};
 
 const SENST: i8 = 20;
 const H_VALUE: i8 = 20;
@@ -104,4 +105,54 @@ fn main() {
     let mut background = Mat::default();
 
     let ret = cap.read(&mut background);
+
+    unsafe {
+        let mut res_background = resize(
+            &GMat::from_raw(background.as_raw_mut()),
+            Size::new(500, 500),
+            0.,
+            0.,
+            INTER_LINEAR,
+        )
+        .unwrap();
+
+        imshow("Background", &Mat::from_raw(res_background.as_raw_mut())).unwrap();
+        wait_key(0).unwrap();
+        destroy_all_windows().unwrap();
+
+        let fourcc = VideoWriter::fourcc('M', 'P', 'V', '4').unwrap();
+
+        let mut out =
+            VideoWriter::new("output.mp4", fourcc, 30.0, Size::new(500, 500), true).unwrap();
+
+        loop {
+            let mut frame = Mat::default();
+            cap.read(&mut frame).unwrap();
+            let mut res_frame = resize(
+                &GMat::from_raw(frame.as_raw_mut()),
+                Size::new(500, 500),
+                0.,
+                0.,
+                INTER_LINEAR,
+            )
+            .unwrap();
+
+            let mut image = detect_blue(
+                &mut Mat::from_raw(res_frame.as_raw_mut()),
+                &mut Mat::from_raw(res_background.as_raw_mut()),
+            );
+
+            out.write(&Mat::from_raw(image.as_raw_mut())).unwrap();
+
+            imshow("Image", &Mat::from_raw(image.as_raw_mut())).unwrap();
+
+            if wait_key(1).unwrap() == b'q' as i32 {
+                break;
+            }
+        }
+
+        cap.release().unwrap();
+        out.release().unwrap();
+        destroy_all_windows().unwrap();
+    }
 }
