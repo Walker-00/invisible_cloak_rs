@@ -14,18 +14,19 @@ const SENST: i8 = 20;
 const H_VALUE: i8 = 20;
 const KERNEL_SIZE: i32 = 10;
 
-fn detect_blue(frame: Mat, background: Mat) {
+fn detect_blue(frame: &mut Mat, background: Mat) {
     let mut hsv_image = Mat::default();
-    opencv::imgproc::cvt_color(&frame, &mut hsv_image, opencv::imgproc::COLOR_RGB2HSV, 0);
+    opencv::imgproc::cvt_color(frame, &mut hsv_image, opencv::imgproc::COLOR_RGB2HSV, 0);
 
     let light_blue = opencv::core::VecN::new((H_VALUE - SENST) as f64, 60., 60., 0.);
 
     let dark_blue = opencv::core::VecN::new((H_VALUE + SENST) as f64, 255., 255., 0.);
 
     unsafe {
+        let mut frame = (&mut (frame.clone())).clone();
         let mut mask = Mat::default();
 
-        in_range(&mut hsv_image, &light_blue, &dark_blue, &mut mask);
+        in_range(&mut hsv_image, &light_blue, &dark_blue, &mut mask).unwrap();
 
         let kernel = Mat::ones(KERNEL_SIZE, KERNEL_SIZE, CV_8U).unwrap();
 
@@ -56,7 +57,7 @@ fn detect_blue(frame: Mat, background: Mat) {
 
         let cont_sorted_vec: Vec<opencv::core::Point_<i32>> =
             contours.iter::<f32>().unwrap().map(|c| c.0).collect();
-        let mut poly_image = Mat::zeros_nd(&[500, 500, 3], CV_8U)
+        let mut contour_mask = Mat::zeros_nd(&[500, 500, 3], CV_8U)
             .unwrap()
             .to_mat()
             .unwrap();
@@ -64,9 +65,19 @@ fn detect_blue(frame: Mat, background: Mat) {
         let mat_cont_sorted = Mat::from_slice(&cont_sorted_vec).unwrap();
 
         fill_poly(
-            &mut poly_image,
+            &mut contour_mask,
             &mat_cont_sorted,
             Scalar_::from((255., 255., 255.)),
+            LINE_8,
+            0,
+            Point::default(),
+        )
+        .unwrap();
+
+        fill_poly(
+            &mut frame,
+            &mat_cont_sorted,
+            Scalar_::from((0., 0., 0.)),
             LINE_8,
             0,
             Point::default(),
