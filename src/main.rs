@@ -1,10 +1,10 @@
 use ndarray;
 use opencv;
-use opencv::core::{BorderTypes, Point, Scalar, ToInputArray, Vector, CV_8U};
+use opencv::core::{BorderTypes, Point, Scalar, ToInputArray, Vector, CV_8U, in_range};
 use opencv::gapi::morphology_ex;
 use opencv::imgproc::{
     contour_area, fill_poly, find_contours, morphology_default_border_value, MorphTypes,
-    CHAIN_APPROX_SIMPLE, RETR_EXTERNAL,
+    CHAIN_APPROX_SIMPLE, RETR_EXTERNAL, morphology_ex,
 };
 use opencv::prelude::*;
 use opencv::ximgproc::morphology_ex;
@@ -17,28 +17,24 @@ fn detect_blue(frame: Mat, background: Mat) {
     let mut hsv_image = Mat::default();
     opencv::imgproc::cvt_color(&frame, &mut hsv_image, opencv::imgproc::COLOR_RGB2HSV, 0);
 
-    let light_blue = opencv::gapi::GScalar::new(opencv::core::VecN::new(
+    let light_blue = opencv::core::VecN::new(
         (H_VALUE - SENST) as f64,
         60.,
         60.,
         0.,
-    ))
-    .unwrap();
+    );
 
-    let dark_blue = opencv::gapi::GScalar::new(opencv::core::VecN::new(
+    let dark_blue = opencv::core::VecN::new(
         (H_VALUE + SENST) as f64,
         255.,
         255.,
         0.,
-    ))
-    .unwrap();
+    );
+
     unsafe {
-        let mask = opencv::gapi::in_range(
-            &mut (opencv::gapi::GMat::from_raw(hsv_image.as_raw_mut())),
-            &light_blue,
-            &dark_blue,
-        )
-        .unwrap();
+        let mut mask = Mat::default();
+
+        in_range(&mut hsv_image, &light_blue, &dark_blue, &mut mask) ;
 
         let kernel = Mat::ones(KERNEL_SIZE, KERNEL_SIZE, CV_8U).unwrap();
 
@@ -52,6 +48,8 @@ fn detect_blue(frame: Mat, background: Mat) {
             Scalar::default(),
         )
         .unwrap();
+
+        morphology_ex(&mask, , op, kernel, anchor, iterations, border_type, border_value)
 
         let mut contours = Mat::default();
 
