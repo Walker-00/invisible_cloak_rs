@@ -4,12 +4,13 @@ use opencv::core::{
     in_range, BorderTypes, Point, Scalar, Scalar_, ToInputArray, Vec3d, VecN, Vector,
     BORDER_CONSTANT, CV_8U,
 };
-use opencv::gapi::{bitwise_and, bitwise_or, GMat};
+use opencv::gapi::{bitwise_and, bitwise_or, resize, GMat};
 use opencv::imgproc::{
     contour_area, fill_poly, find_contours, morphology_default_border_value, morphology_ex,
     MorphTypes, CHAIN_APPROX_SIMPLE, LINE_8, MORPH_CLOSE, RETR_EXTERNAL,
 };
 use opencv::prelude::*;
+use opencv::videoio::{VideoCapture, CAP_ANY};
 
 const SENST: i8 = 20;
 const H_VALUE: i8 = 20;
@@ -97,4 +98,10 @@ unsafe fn detect_blue(frame: &mut Mat, background: &mut Mat) -> GMat {
     return final_img;
 }
 
-fn main() {}
+fn main() {
+    let mut cap = VideoCapture::new(0, CAP_ANY).unwrap();
+
+    let mut background = Mat::default();
+
+    let ret = cap.read(&mut background);
+}
