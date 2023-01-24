@@ -1,11 +1,12 @@
 use ndarray;
 use opencv;
 use opencv::core::{
-    in_range, BorderTypes, Point, Scalar, ToInputArray, Vector, BORDER_CONSTANT, CV_8U,
+    in_range, BorderTypes, Point, Scalar, Scalar_, ToInputArray, Vec3d, VecN, Vector,
+    BORDER_CONSTANT, CV_8U,
 };
 use opencv::imgproc::{
     contour_area, fill_poly, find_contours, morphology_default_border_value, morphology_ex,
-    MorphTypes, CHAIN_APPROX_SIMPLE, MORPH_CLOSE, RETR_EXTERNAL,
+    MorphTypes, CHAIN_APPROX_SIMPLE, LINE_8, MORPH_CLOSE, RETR_EXTERNAL,
 };
 use opencv::prelude::*;
 
@@ -53,13 +54,24 @@ fn detect_blue(frame: Mat, background: Mat) {
         )
         .unwrap();
 
-        let e = contours.iter::<f32>().unwrap().map(|c| c.0).collect();
+        let cont_sorted_vec: Vec<opencv::core::Point_<i32>> =
+            contours.iter::<f32>().unwrap().map(|c| c.0).collect();
         let mut poly_image = Mat::zeros_nd(&[500, 500, 3], CV_8U)
             .unwrap()
             .to_mat()
             .unwrap();
 
-        fill_poly(&mut poly_image, &e, , line_type, shift, offset);
+        let mat_cont_sorted = Mat::from_slice(&cont_sorted_vec).unwrap();
+
+        fill_poly(
+            &mut poly_image,
+            &mat_cont_sorted,
+            Scalar_::from((255., 255., 255.)),
+            LINE_8,
+            0,
+            Point::default(),
+        )
+        .unwrap();
     }
 }
 
