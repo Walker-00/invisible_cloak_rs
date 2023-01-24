@@ -39,7 +39,7 @@ unsafe fn detect_blue(frame: &mut Mat, background: &mut Mat) -> GMat {
         &mut closing,
         MORPH_CLOSE,
         &kernel,
-        Point::new(-1, -1),
+        Point::new(0, 0),
         1,
         BORDER_CONSTANT,
         morphology_default_border_value().unwrap(),
@@ -53,7 +53,7 @@ unsafe fn detect_blue(frame: &mut Mat, background: &mut Mat) -> GMat {
         &mut contours,
         RETR_EXTERNAL,
         CHAIN_APPROX_SIMPLE,
-        Point::new(-1, -1),
+        Point::new(0, 0),
     )
     .unwrap();
 
@@ -120,7 +120,7 @@ fn main() {
         wait_key(0).unwrap();
         destroy_all_windows().unwrap();
 
-        let fourcc = VideoWriter::fourcc('M', 'P', 'V', '4').unwrap();
+        let fourcc = VideoWriter::fourcc('X', 'V', 'I', 'D').unwrap();
 
         let mut out =
             VideoWriter::new("output.mp4", fourcc, 30.0, Size::new(500, 500), true).unwrap();
