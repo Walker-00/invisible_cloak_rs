@@ -3,9 +3,11 @@ use opencv;
 use opencv::core::{BorderTypes, Point, Scalar, ToInputArray, Vector, CV_8U};
 use opencv::gapi::morphology_ex;
 use opencv::imgproc::{
-    contour_area, fill_poly, find_contours, MorphTypes, CHAIN_APPROX_SIMPLE, RETR_EXTERNAL,
+    contour_area, fill_poly, find_contours, morphology_default_border_value, MorphTypes,
+    CHAIN_APPROX_SIMPLE, RETR_EXTERNAL,
 };
 use opencv::prelude::*;
+use opencv::ximgproc::morphology_ex;
 
 const SENST: i8 = 20;
 const H_VALUE: i8 = 20;
@@ -52,6 +54,9 @@ fn detect_blue(frame: Mat, background: Mat) {
         .unwrap();
 
         let mut contours = Mat::default();
+
+        find_contours(image, contours, mode, method, offset);
+        find_contours(&mut closing, &mut contours, mode, method, offset);
 
         find_contours(
             &Mat::from_raw(closing.as_raw_mut()),
