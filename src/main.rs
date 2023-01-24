@@ -52,6 +52,14 @@ fn detect_blue(frame: Mat, background: Mat) {
             Point::new(-1, -1),
         )
         .unwrap();
+
+        let e = contours.iter::<f32>().unwrap().map(|c| c.0).collect();
+        let mut poly_image = Mat::zeros_nd(&[500, 500, 3], CV_8U)
+            .unwrap()
+            .to_mat()
+            .unwrap();
+
+        fill_poly(&mut poly_image, &e, , line_type, shift, offset);
     }
 }
 
