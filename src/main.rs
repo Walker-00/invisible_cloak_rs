@@ -4,6 +4,7 @@ use opencv::core::{
     in_range, BorderTypes, Point, Scalar, Scalar_, ToInputArray, Vec3d, VecN, Vector,
     BORDER_CONSTANT, CV_8U,
 };
+use opencv::gapi::{bitwise_and, bitwise_or, GMat};
 use opencv::imgproc::{
     contour_area, fill_poly, find_contours, morphology_default_border_value, morphology_ex,
     MorphTypes, CHAIN_APPROX_SIMPLE, LINE_8, MORPH_CLOSE, RETR_EXTERNAL,
@@ -14,7 +15,7 @@ const SENST: i8 = 20;
 const H_VALUE: i8 = 20;
 const KERNEL_SIZE: i32 = 10;
 
-fn detect_blue(frame: &mut Mat, background: Mat) {
+unsafe fn detect_blue(frame: &mut Mat, background: &mut Mat) -> GMat {
     let mut hsv_image = Mat::default();
     opencv::imgproc::cvt_color(frame, &mut hsv_image, opencv::imgproc::COLOR_RGB2HSV, 0);
 
@@ -82,6 +83,18 @@ fn detect_blue(frame: &mut Mat, background: Mat) {
         Point::default(),
     )
     .unwrap();
+
+    let obj_mask = &mut frame.clone();
+
+    let background_mask = bitwise_and(
+        &GMat::from_raw(contour_mask.as_raw_mut()),
+        &GMat::from_raw(background.as_raw_mut()),
+    )
+    .unwrap();
+
+    let final_img = bitwise_or(&GMat::from_raw(obj_mask.as_raw_mut()), &background_mask).unwrap();
+
+    return final_img;
 }
 
 fn main() {}
