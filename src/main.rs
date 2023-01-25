@@ -100,7 +100,7 @@ unsafe fn detect_blue(frame: &mut Mat, background: &mut Mat) -> GMat {
 }
 
 fn main() {
-    let mut cap = VideoCapture::new(0, CAP_ANY).expect("Fuck: ");
+    let mut cap = VideoCapture::default().expect("Fuck: ");
 
     let opened = cap.is_opened().unwrap();
 
